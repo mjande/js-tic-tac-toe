@@ -1,0 +1,29 @@
+body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.board-container {
+  width: 300px;
+  height: 300px;
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr)
+}
+
+.board-container div {
+  font-size: 3rem;
+  text-align: center;
+  line-height: 100px;
+}
+
+.row2 {
+  border-top: solid;
+  border-bottom: solid;
+}
+
+.col2 {
+  border-left: solid;
+  border-right: solid;
+}
