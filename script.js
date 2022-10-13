@@ -21,10 +21,16 @@ const Game = (() => {
   }
 
   const nextTurn = () => {
-    switchPlayer();
+    if (Board.isWin()) {
+      win();
+    } else if (Board.isTie()) {
+      tie();
+    } else {
+      _switchPlayer();
+    }
   }
 
-  const switchPlayer = () => {
+  const _switchPlayer = () => {
     if (_currentPlayer == player1) {
       _currentPlayer = player2
     } else {
@@ -34,6 +40,14 @@ const Game = (() => {
 
   const play = () => {
     BoardController.setup();
+  }
+
+  const win = () => {
+    console.log(`${_currentPlayer.mark} won!`)
+  }
+
+  const tie = () => {
+    console.log("It's a tie.")
   }
 
   return { play, getCurrentPlayer, nextTurn };
@@ -47,7 +61,7 @@ const BoardController = (() => {
   }
 
   const processInput = (event) => {
-    const position = toPosition(event);
+    const position = _toPosition(event);
     if (Board.validate(position)) {
       Board.update(position);
       BoardDisplay.update(event);
@@ -55,7 +69,7 @@ const BoardController = (() => {
     }
   }
 
-  const toPosition = (event) => {
+  const _toPosition = (event) => {
     const row = parseInt(event.target.dataset.row);
     const col = parseInt(event.target.dataset.col);
 
@@ -71,7 +85,6 @@ const BoardController = (() => {
         position = row + col + 2;
     };
 
-    console.log(position);
     return position;
   }
 
@@ -84,17 +97,45 @@ const Board = (() => {
 
   const clear = () => {
     array = Array(9).fill("");
-  }
+  };
 
   const validate = (position) => {
     return !Boolean( array[position] )
-  }
+  };
   
   const update = (position) => {
     array[position] = Game.getCurrentPlayer().mark
+  };
+
+  const isWin = () => {
+    const playerMark = Game.getCurrentPlayer().mark;
+
+    return _isHorizontalWin(playerMark) || _isVerticalWin(playerMark) || 
+      _isDiagonalWin(playerMark);
   }
 
-  return { clear, validate, update }
+  const _isHorizontalWin = (playerMark) => {
+    return (array[0] == playerMark && array[1] == playerMark && array[2] == playerMark) ||
+    (array[3] == playerMark && array[4] == playerMark && array[5] == playerMark) ||
+    (array[6] == playerMark && array[7] == playerMark && array[8] == playerMark);
+  } 
+
+  const _isVerticalWin = (playerMark) => {
+    return (array[0] == playerMark && array[3] == playerMark && array[6] == playerMark) ||
+    (array[1] == playerMark && array[4] == playerMark && array[7] == playerMark) ||
+    (array[2] == playerMark && array[5] == playerMark && array[8] == playerMark)
+  }
+
+  const _isDiagonalWin = (playerMark) => {
+    return (array[0] == playerMark && array[4] == playerMark && array[8] == playerMark) ||
+    (array[2] == playerMark && array[4] == playerMark && array[6] == playerMark)
+  }
+
+  const isTie = () => {
+    return !array.includes("");
+  }
+
+  return { clear, validate, update, isWin, isTie }
 })();
 
 
@@ -104,10 +145,10 @@ const BoardDisplay = (() => {
     cells = document.querySelectorAll(".board-container div");
     cells.forEach( cell => { cell.textContent = "" });
 
-    setListeners();
+    _setListeners();
   }
   
-  const setListeners = () => {
+  const _setListeners = () => {
     for (let x = 1; x < 4; x++) {
       for (let y = 1; y < 4; y++) {
         const node = document.querySelector(`.row${x}.col${y}`);
