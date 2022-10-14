@@ -5,17 +5,101 @@ Game -> BoardController -|
 */
 
 // Player Factory
-const Player = (mark) => {
-  
-  return { mark }
+const Player = () => {
+  let name = "";
+  let mark = "";
+
+  return { name, mark }
 };
 
 // Game Module 
 const Game = (() => {
-  let player1 = Player("X");
-  let player2 = Player("O");
+  // Establish DOM elements
+  const playerDisplay = document.querySelector(".player");
+  const messageBox = document.querySelector(".message");
+  const vs = document.querySelector(".vs");
+  const input = document.querySelector("input");
+  const markButtons = document.querySelectorAll(".mark-button");
+  const randomButton = document.querySelector(".random-button");
+  
+  // setup
+  let player1 = Player();
+  let player2 = Player();
   let _currentPlayer = player1;
 
+  const start = () => {
+    playerDisplay.textContent = "Player #1";
+    input.addEventListener("keydown", _inputName);
+    markButtons.forEach((markButton) => {
+      markButton.addEventListener("click", _chooseMark);
+    });
+    randomButton.addEventListener("click", _randomMark);
+  };
+
+  const _inputName = (event) => {
+    if (event.key == "Enter") {  
+      // Update value
+      _currentPlayer.name = input.value;
+
+      // Hide input
+      input.value = "";
+      input.classList.add("hidden");
+
+      if (player2.mark) {
+        _finalizeSetup();
+      } else {
+        messageBox.textContent = ", choose your mark or select random."
+        playerDisplay.textContent = _currentPlayer.name;
+        
+        markButtons.forEach( markButton => { 
+          markButton.classList.remove("hidden") 
+        });
+        randomButton.classList.remove("hidden");
+      }
+    }
+  };
+
+  const _chooseMark = (event) => {
+    // Update value
+    player1.mark = event.target.textContent;
+    player2.mark = (player1.mark == "X" ? "O" : "X");
+
+    // Switch back to input
+    markButtons.forEach((markButton) => {
+      markButton.classList.add("hidden");
+    });
+    randomButton.classList.add("hidden");
+    input.classList.remove("hidden");
+
+    playerDisplay.textContent = "Player #2"
+    _currentPlayer = player2;
+  }
+
+  const _randomMark = () => {
+    result = Math.floor(Math.random() * 2);
+    player1.mark = (result ? "X" : "O")
+    player2.mark = (result ? "O" : "X") 
+
+    // Switch back to input
+    markButtons.forEach((markButton) => {
+      markButton.classList.add("hidden");
+    });
+    randomButton.classList.add("hidden");
+    input.classList.remove("hidden");
+
+    playerDisplay.textContent = "Player #2"
+    _currentPlayer = player2;
+  };
+
+  const _finalizeSetup = () => {
+    BoardController.setup();
+    _currentPlayer = (player1.mark == "X" ? player1 : player2)
+    playerDisplay.textContent = _currentPlayer.name;
+    vs.textContent = `${player1.name} (${player1.mark}) vs. ${player2.name} (${player2.mark})`
+    messageBox.textContent = `, it is your turn. You are ${_currentPlayer.mark}es.`
+  };
+
+  // Gameplay utilities
   const getCurrentPlayer = () => {
     return _currentPlayer;
   }
@@ -38,10 +122,6 @@ const Game = (() => {
     }
   }
 
-  const play = () => {
-    BoardController.setup();
-  }
-
   const win = () => {
     console.log(`${_currentPlayer.mark} won!`)
   }
@@ -50,7 +130,7 @@ const Game = (() => {
     console.log("It's a tie.")
   }
 
-  return { play, getCurrentPlayer, nextTurn };
+  return { start, getCurrentPlayer, nextTurn };
 })();
 
 // BoardController Module
@@ -165,4 +245,4 @@ const BoardDisplay = (() => {
   return { setup, update }
 })();
 
-Game.play();
+Game.start();

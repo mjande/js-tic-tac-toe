@@ -3,6 +3,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 1rem;
 }
 
 .board-container {
@@ -26,4 +27,20 @@ body {
 .col2 {
   border-left: solid;
   border-right: solid;
+}
+
+.message {
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.player {
+  display: inline;
+}
+
+.message {
+  display: inline;
 }
