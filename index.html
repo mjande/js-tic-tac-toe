@@ -10,6 +10,7 @@
 </head>
 <body>
   <h1>JS Tic-Tac-Toe</h1>
+  <button class="reset-button">Reset</button>
   <div class="board-container">
     <div class="row1 col1" data-row="1" data-col="1"></div>
     <div class="row1 col2" data-row="1" data-col="2"></div>
@@ -22,11 +23,13 @@
     <div class="row3 col3" data-row="3" data-col="3"></div>
   </div>
   <div>Let's play Tic-Tac-Toe!</div>
+  <div class="vs hidden"></div>
   <div>
     <p class="player"></p><p class="message">, type your name below and press Enter.</p>
   </div>
-  <div class="vs hidden"></div>
+  
   <input type="text">
+  <button class="play-again-button hidden">Play again?</button>
   <div>
     <button class="mark-button hidden">X</button>
     <button class="mark-button hidden">O</button>

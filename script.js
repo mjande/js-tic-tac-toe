@@ -21,6 +21,7 @@ const Game = (() => {
   const input = document.querySelector("input");
   const markButtons = document.querySelectorAll(".mark-button");
   const randomButton = document.querySelector(".random-button");
+  const playAgainButton = document.querySelector('.play-again-button');
   
   // setup
   let player1 = Player();
@@ -29,6 +30,7 @@ const Game = (() => {
 
   const start = () => {
     playerDisplay.textContent = "Player #1";
+    messageBox.textContent = ", type your name below and press Enter."
     input.addEventListener("keydown", _inputName);
     markButtons.forEach((markButton) => {
       markButton.addEventListener("click", _chooseMark);
@@ -95,8 +97,11 @@ const Game = (() => {
     BoardController.setup();
     _currentPlayer = (player1.mark == "X" ? player1 : player2)
     playerDisplay.textContent = _currentPlayer.name;
-    vs.textContent = `${player1.name} (${player1.mark}) vs. ${player2.name} (${player2.mark})`
-    messageBox.textContent = `, it is your turn. You are ${_currentPlayer.mark}es.`
+
+    vs.textContent = `${player1.name} (${player1.mark}) vs. ${player2.name} (${player2.mark})`;
+    vs.classList.remove("hidden");
+
+    messageBox.textContent = `, it is your turn. You are ${_currentPlayer.mark}'s.`
   };
 
   // Gameplay utilities
@@ -111,6 +116,8 @@ const Game = (() => {
       tie();
     } else {
       _switchPlayer();
+      playerDisplay.textContent = _currentPlayer.name;
+      messageBox.textContent = `, it is your turn. You are ${_currentPlayer.mark}'s.`
     }
   }
 
@@ -119,16 +126,44 @@ const Game = (() => {
       _currentPlayer = player2
     } else {
       _currentPlayer = player1
-    }
+    };
+
   }
 
   const win = () => {
-    console.log(`${_currentPlayer.mark} won!`)
+    messageBox.textContent = " won!";
+
+    BoardDisplay.removeListeners();
+    playAgainButton.classList.remove("hidden");
+    playAgainButton.addEventListener("click", playAgain);
   }
 
   const tie = () => {
-    console.log("It's a tie.")
+    playerDisplay.textContent = "";
+    messageBox.textContent = "It's a tie.";
+
+    BoardDisplay.removeListeners();
+    playAgainButton.classList.remove("hidden");
+    playAgainButton.addEventListener("click", playAgain);
   }
+
+  const playAgain = () => {
+    playAgainButton.classList.add("hidden");
+    BoardController.cleanUp();
+    input.classList.remove("hidden");
+    vs.classList.add("hidden");
+
+
+    player1 = Player();
+    player2 = Player();
+    _currentPlayer = player1;
+    start();
+  }
+
+  (function () {
+    const resetButton = document.querySelector(".reset-button");
+    resetButton.addEventListener("click", tie);
+  })();
 
   return { start, getCurrentPlayer, nextTurn };
 })();
@@ -136,8 +171,7 @@ const Game = (() => {
 // BoardController Module
 const BoardController = (() => {
   const setup = () => {
-    Board.clear();
-    BoardDisplay.setup();
+    BoardDisplay.setListeners();
   }
 
   const processInput = (event) => {
@@ -168,19 +202,24 @@ const BoardController = (() => {
     return position;
   }
 
-  return { setup, processInput }
+  const cleanUp = () => {
+    Board.clear();
+    BoardDisplay.clear();
+  }
+
+  return { setup, processInput, cleanUp }
 })();
 
 // Board Module
 const Board = (() => {
-  let array;
+  let array = Array(9).fill("");
 
   const clear = () => {
     array = Array(9).fill("");
   };
 
   const validate = (position) => {
-    return !Boolean( array[position] )
+    return !array[position];
   };
   
   const update = (position) => {
@@ -221,14 +260,7 @@ const Board = (() => {
 
 // BoardDisplay Module
 const BoardDisplay = (() => {
-  const setup = () => {
-    cells = document.querySelectorAll(".board-container div");
-    cells.forEach( cell => { cell.textContent = "" });
-
-    _setListeners();
-  }
-  
-  const _setListeners = () => {
+  const setListeners = () => {
     for (let x = 1; x < 4; x++) {
       for (let y = 1; y < 4; y++) {
         const node = document.querySelector(`.row${x}.col${y}`);
@@ -242,7 +274,21 @@ const BoardDisplay = (() => {
     event.target.textContent = playerMark;
   }
 
-  return { setup, update }
+  const removeListeners = () => {
+    for (let x = 1; x < 4; x++) {
+      for (let y = 1; y < 4; y++) {
+        const node = document.querySelector(`.row${x}.col${y}`);
+        node.removeEventListener("click", BoardController.processInput);
+      }
+    }
+  }
+
+  const clear = () => {
+    cells = document.querySelectorAll(".board-container div")
+    cells.forEach( cell => { cell.textContent = "" } );
+  }
+
+  return { update, setListeners, removeListeners, clear }
 })();
 
 Game.start();
